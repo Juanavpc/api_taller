@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:card_swiper/card_swiper.dart';
+import '../Widgets/listImages.dart';
+import '../Widgets/listSwiper.dart';
+import '../Provider/Provider_images.dart';
+import '../Models/Model_images.dart';
 
 class MyHomeApp extends StatefulWidget{
   
@@ -11,6 +15,16 @@ class MyHomeApp extends StatefulWidget{
 }
 
 class _MyHomePageState extends State<MyHomeApp>{
+
+  late Future<List<ModelImages>> pokemonList;
+
+  @override
+  void initState() {
+    super.initState();
+    final getprovider = ImagenProvider();
+    pokemonList = getprovider.getPokemon();
+  }
+
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -18,67 +32,36 @@ class _MyHomePageState extends State<MyHomeApp>{
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 250,
-              child:PageView(
-                controller: PageController(
-                  viewportFraction: 0.5
+      body: FutureBuilder(
+        future: pokemonList,
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 250,
+                  child:PageView(
+                    controller: PageController(
+                      viewportFraction: 0.5
+                    ),
+                    children: listImages(snapshot.data as List<ModelImages>),
+                  ),
                 ),
-                children: <Widget>[
-                  Page(Colors.yellow, "Imagen 1"),
-                  Page(Colors.red, "Imagen 2"),
-                  Page(Colors.blue, "Imagen 3"),
-                  Page(Colors.pink, "Imagen 4"),
-                  Page(Colors.green, "Imagen 5"),
-                ],
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 30),
-              height: 200,
-              child: Swiper(
-                itemWidth: 200,
-                itemCount: 4,
-                itemBuilder: (BuildContext context, int index){
-                  return ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network("https://picsum.photos/id/237/200/300", fit: BoxFit.cover),
-                  );
-                },
-                viewportFraction: 0.8,
-                scale: 0.9,
-                layout: SwiperLayout.STACK,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Page extends StatelessWidget{
-  final color;
-  final text;
-  const Page(this.color, this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      margin: EdgeInsets.only(right: 20, top: 20),
-      decoration: BoxDecoration(
-        color: this.color,
-      ),
-      child: Text(
-        this.text,
-        textAlign: TextAlign.center,
+                Container(
+                  margin: EdgeInsets.only(top: 30),
+                  height: 200,
+                  child: listSwiper(snapshot.data as List<ModelImages>),
+                ),
+              ],
+            );
+          }else{
+            print(snapshot.error);
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
     );
   }
